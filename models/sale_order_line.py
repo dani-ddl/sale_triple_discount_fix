@@ -2,7 +2,6 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from odoo import api, fields, models
-
 import logging
 
 class SaleOrderLine(models.Model):
@@ -15,10 +14,18 @@ class SaleOrderLine(models.Model):
         Compute the amounts of the SO line.
         """
         for line in self:
+            discount1=(self.discount or 0.0)
+            discount2=(self.discount2 or 0.0)
+            discount3=(self.discount3 or 0.0)
+            logging.info('self.discount***********************************************')
+            logging.info(discount1)
+            logging.info(discount2)
+            logging.info(discount3)
+
             # to avoid coupling these calculations must be passed to a method
-            price = self.price_unit * (1 - (self.discount or 0.0) / 100.0)
-            price *= (1 - (self.discount2 or 0.0) / 100.0)
-            price *= (1 - (self.discount3 or 0.0) / 100.0)
+            price = self.price_unit * (1 - (discount1) / 100.0)
+            price *= (1 - discount2 / 100.0)
+            price *= (1 - discount3 / 100.0)
 
             taxes = line.tax_id.compute_all(price, line.order_id.currency_id, line.product_uom_qty,
                                             product=line.product_id, partner=line.order_id.partner_shipping_id)
@@ -27,3 +34,4 @@ class SaleOrderLine(models.Model):
                 'price_total': taxes['total_included'],
                 'price_subtotal': taxes['total_excluded'],
             })
+
